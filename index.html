@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三連複 GOD OF CHAOS Ver4.0.1</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Arial}
+#cv{position:fixed;inset:0}
+#ui{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+h1{font-size:clamp(28px,5vw,56px);text-shadow:0 0 15px magenta,0 0 30px cyan}
+#msg{height:56px;font-size:34px;font-weight:bold;text-shadow:0 0 12px gold}
+#balls{display:flex;gap:18px;margin:20px}
+.ball{width:105px;height:105px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#222;border:4px solid #fff;font-size:52px;box-shadow:0 0 20px gold}
+button{font-size:28px;padding:18px 44px;border:0;border-radius:12px;background:#ff0066;color:#fff}
+.flash{animation:f .08s infinite alternate}
+@keyframes f{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg) brightness(2)}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="ui">
+<h1>🎰 三連複 GOD OF CHAOS 🎰</h1>
+<div id="msg">抽選開始を押せ！</div>
+<div id="balls">
+<div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
+</div>
+<button id="go">抽選開始</button>
+</div>
+<script>
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+function resize(){cv.width=innerWidth;cv.height=innerHeight}
+resize();addEventListener('resize',resize);
+
+let parts=[];
+function burst(n){
+ for(let i=0;i<n;i++){
+  parts.push({x:cv.width/2,y:cv.height/2,vx:(Math.random()-0.5)*18,vy:(Math.random()-0.5)*18,r:2+Math.random()*4,h:Math.random()*360,l:80+Math.random()*60});
+ }
+}
+function anim(){
+ ctx.fillStyle="rgba(0,0,0,0.18)";
+ ctx.fillRect(0,0,cv.width,cv.height);
+ for(const p of parts){
+  p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.l--;
+  ctx.beginPath();
+  ctx.fillStyle=`hsl(${p.h},100%,60%)`;
+  ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+  ctx.fill();
+ }
+ parts=parts.filter(p=>p.l>0);
+ requestAnimationFrame(anim);
+}
+anim();
+
+const msg=document.getElementById("msg");
+const balls=[...document.querySelectorAll(".ball")];
+const btn=document.getElementById("go");
+
+const events=[
+"⚠ WARNING","🌌 BLACK HOLE","🌍 地球崩壊","🚀 宇宙突入",
+"🎰 GOD RUSH","🐔 ニワトリ乱入","💥 画面崩壊",
+"🌈 LAST CHANCE","👼 神降臨","✨ 超復活"
+];
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function pick3(){
+ const arr=[...Array(18)].map((_,i)=>i+1);
+ for(let i=arr.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));
+   [arr[i],arr[j]]=[arr[j],arr[i]];
+ }
+ return arr.slice(0,3).sort((a,b)=>a-b);
+}
+
+btn.addEventListener("click", async ()=>{
+ btn.disabled=true;
+ document.body.classList.add("flash");
+ for(let i=0;i<events.length;i++){
+   msg.textContent=events[i];
+   burst(180);
+   const end=Date.now()+500;
+   while(Date.now()<end){
+      balls.forEach(b=>{
+        b.textContent=Math.floor(Math.random()*18)+1;
+        b.style.transform=`translate(${(Math.random()-0.5)*16}px,${(Math.random()-0.5)*16}px)`;
+        b.style.background=`hsl(${Math.random()*360},80%,35%)`;
+      });
+      await sleep(40);
+   }
+ }
+ const r=pick3();
+ balls.forEach((b,i)=>{
+   b.style.transform="";
+   b.style.background="#222";
+   b.style.boxShadow="0 0 30px gold";
+   b.textContent=r[i];
+ });
+ document.body.classList.remove("flash");
+ msg.textContent="👑 FINAL : "+r.join(" - ");
+ if(navigator.vibrate) navigator.vibrate([120,50,120,50,300]);
+ btn.disabled=false;
+});
+</script>
+</body>
+</html>
