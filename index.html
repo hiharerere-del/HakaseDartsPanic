@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ver0.1.0</title>
+<style>
+html,body{margin:0;background:#140b28;overflow:hidden}
+canvas{display:block;margin:auto;background:#140b28;touch-action:none}
+</style>
+</head>
+<body>
+<canvas id="cv" width="450" height="800"></canvas>
+<script>
+const c=document.getElementById("cv"),g=c.getContext("2d");
+let px=225,tx=225;
+let darts=[],enemies=[],fx=[];
+let score=0,hp=3,hi=+localStorage.hdpHi||0,gameover=false,fire=0;
+
+let bossTimer=20;
+setInterval(()=>{
+ if(!gameover && bossTimer>0) bossTimer--;
+},1000);
+
+
+function spawnEnemy(){
+ enemies.push({x:30+Math.random()*390,y:-20,r:18,s:2+Math.random()*2+Math.min(score*0.03,4)});
+}
+for(let i=0;i<5;i++)spawnEnemy();
+
+c.onpointermove=e=>{
+ const r=c.getBoundingClientRect();
+ tx=(e.clientX-r.left)*450/r.width;
+}
+c.onclick=()=>{
+ if(gameover){
+   score=0;hp=3;gameover=false;darts=[];enemies=[];fx=[];
+   for(let i=0;i<5;i++)spawnEnemy();
+ }
+}
+
+function loop(){
+ g.fillStyle="#140b28";
+ g.fillRect(0,0,450,800);
+
+ if(!gameover){
+   px+=(tx-px)*0.25;
+   if(--fire<=0){
+      darts.push({x:px,y:715});
+      fire=Math.max(4,10-Math.floor(score/20));
+   }
+
+   darts.forEach(d=>d.y-=12);
+   darts=darts.filter(d=>d.y>-30);
+
+   enemies.forEach(e=>e.y+=e.s);
+
+   for(let i=enemies.length-1;i>=0;i--){
+      let e=enemies[i];
+      if(e.y>820){
+         enemies.splice(i,1);
+         spawnEnemy();
+         hp--;
+         if(hp<=0){
+            gameover=true;
+            if(score>hi){hi=score;localStorage.hdpHi=hi;}
+         }
+         continue;
+      }
+      for(let j=darts.length-1;j>=0;j--){
+         let d=darts[j];
+         if(Math.hypot(d.x-e.x,d.y-e.y)<e.r+4){
+            darts.splice(j,1);
+            enemies.splice(i,1);
+            spawnEnemy();
+            score++;
+            fx.push({x:e.x,y:e.y,t:20});
+            break;
+         }
+      }
+   }
+
+   fx.forEach(f=>f.t--);
+   fx=fx.filter(f=>f.t>0);
+ }
+
+ enemies.forEach(e=>{
+   g.fillStyle="#ff5555";
+   g.beginPath();
+   g.arc(e.x,e.y,e.r,0,Math.PI*2);
+   g.fill();
+ });
+
+ darts.forEach(d=>{
+   g.fillStyle="#fff";
+   g.fillRect(d.x-1,d.y-16,2,18);
+ });
+
+ fx.forEach(f=>{
+   g.strokeStyle="#ffe45c";
+   g.lineWidth=3;
+   g.beginPath();
+   g.arc(f.x,f.y,30-f.t/2,0,Math.PI*2);
+   g.stroke();
+   g.beginPath();
+   g.arc(f.x,f.y,12+(20-f.t),0,Math.PI*2);
+   g.stroke();
+ });
+
+ g.fillStyle="#ffd95e";
+ g.beginPath();
+ g.arc(px,740,22,0,Math.PI*2);
+ g.fill();
+
+ g.fillStyle="#fff";
+ g.font="20px sans-serif";
+ g.fillText("Ver0.1.0",20,30);
+ g.fillText("Score "+score,20,60);
+ g.fillText("Hi "+hi,20,90);
+ g.fillText("HP "+"❤".repeat(hp),20,120);
+ g.fillText("Boss "+bossTimer+"s",20,150);
+
+ if(gameover){
+   g.font="36px sans-serif";
+   g.fillText("GAME OVER",85,360);
+   g.font="20px sans-serif";
+   g.fillText("Tap to Restart",125,395);
+ }
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
