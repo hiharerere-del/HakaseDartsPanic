@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三連複 GOD OF CHAOS Ver3.0.0</title>
+<style>
+html,body{margin:0;background:#000;overflow:hidden;height:100%;font-family:system-ui;color:#fff}
+#c{position:fixed;inset:0}
+#ui{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#title{font-size:clamp(30px,5vw,60px);font-weight:900;text-shadow:0 0 15px #f0f,0 0 30px #0ff}
+#msg{height:50px;font-size:34px;font-weight:700;text-shadow:0 0 12px #ff0}
+#nums{display:flex;gap:20px;margin:20px}
+.ball{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:58px;
+background:#111;border:4px solid #fff;box-shadow:0 0 20px #fff}
+#go{padding:18px 50px;font-size:30px;border:none;border-radius:12px;background:#ff0055;color:#fff}
+.flash{animation:f .08s infinite alternate}.shake{animation:s .05s infinite}
+.zoom{animation:z .4s infinite alternate}
+@keyframes f{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg) brightness(2)}}
+@keyframes z{from{transform:scale(1)}to{transform:scale(1.08)}}
+@keyframes s{0%{transform:translate(8px,-8px)}25%{transform:translate(-8px,6px)}50%{transform:translate(8px,8px)}75%{transform:translate(-8px,-6px)}100%{transform:translate(5px,5px)}}
+</style></head>
+<body>
+<canvas id=c></canvas>
+<div id=ui><div id=title>🎰 三連複 GOD OF CHAOS 🎰</div><div id=msg>押せ。</div>
+<div id=nums><div class=ball>?</div><div class=ball>?</div><div class=ball>?</div></div>
+<button id=go>抽選開始</button></div>
+<script>
+const cv=c,g=cv.getContext("2d");function rs(){cv.width=innerWidth;cv.height=innerHeight}rs();onresize=rs;
+let pt=[];function burst(n){for(let i=0;i<n;i++)pt.push({x:cv.width/2,y:cv.height/2,vx:(Math.random()-.5)*30,vy:(Math.random()-.5)*30,l:90+Math.random()*90,r:2+Math.random()*5,h:Math.random()*360})}
+(function a(){g.fillStyle="rgba(0,0,0,.15)";g.fillRect(0,0,cv.width,cv.height);pt.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.l--;g.beginPath();g.fillStyle=`hsl(${p.h},100%,60%)`;g.arc(p.x,p.y,p.r,0,7);g.fill()});pt=pt.filter(p=>p.l>0);requestAnimationFrame(a)})();
+const balls=[...document.querySelectorAll(".ball")],ui=document.getElementById("ui"),msg=document.getElementById("msg"),go=document.getElementById("go");
+const ev=["⚠ WARNING","🌍 地球崩壊","🌌 ブラックホール","🚀 宇宙突入","🎰 GOD RUSH","🐔 ニワトリ乱入","⚡ 超雷撃","🔥 炎覚醒","🌈 虹カットイン","👼 神降臨","💥 画面崩壊","✨ 超復活"];
+const wait=t=>new Promise(r=>setTimeout(r,t));
+function pick(){let a=[...Array(18)].map((_,i)=>i+1);for(let i=17;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,3).sort((x,y)=>x-y)}
+go.onclick=async()=>{
+go.disabled=true;ui.classList.add("flash","shake","zoom");
+for(let phase=0;phase<14;phase++){
+ burst(phase%2?200:400);
+ let e=ev[Math.floor(Math.random()*ev.length)];
+ let end=Date.now()+500+Math.random()*450;
+ while(Date.now()<end){
+   msg.textContent=e;
+   balls.forEach(b=>{b.textContent=1+Math.floor(Math.random()*18);b.style.background=`hsl(${Math.random()*360},100%,40%)`;b.style.transform=`translate(${(Math.random()-.5)*30}px,${(Math.random()-.5)*30}px) scale(${1+Math.random()*.4})`;});
+   if(Math.random()<.08){document.body.style.background=Math.random()<.5?"#300":"#000";}
+   await wait(35);
+ }
+}
+document.body.style.background="#000";
+let r=pick();
+balls.forEach((b,i)=>{b.style.transform="";b.style.background="#222";b.style.boxShadow="0 0 35px gold";b.textContent=r[i]});
+msg.textContent="👑 FINAL  "+r.join(" - ");
+ui.classList.remove("flash","shake","zoom");
+navigator.vibrate&&navigator.vibrate([120,50,120,50,300]);
+go.disabled=false;
+};
+</script></body></html>
