@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>はかせのダーツパニック Ver0.0.2</title>
+<style>
+html,body{margin:0;background:#120a22;height:100%;overflow:hidden;font-family:sans-serif}
+canvas{display:block;width:100vw;height:100vh;background:#120a22}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+function resize(){c.width=450;c.height=800;}
+resize();
+
+class Player{
+ constructor(){this.x=225;this.y=700;}
+ update(x){this.x=Math.max(40,Math.min(410,x));}
+ draw(){
+  ctx.fillStyle="#ffeb3b";
+  ctx.beginPath();
+  ctx.arc(this.x,this.y,22,0,Math.PI*2);
+  ctx.fill();
+ }
+}
+
+class DartManager{
+ constructor(){this.darts=[];}
+ update(){}
+ draw(){}
+}
+
+const player=new Player();
+const darts=new DartManager();
+
+c.addEventListener("pointermove",e=>{
+ const r=c.getBoundingClientRect();
+ player.update((e.clientX-r.left)*(450/r.width));
+});
+
+function loop(){
+ ctx.fillStyle="#120a22";
+ ctx.fillRect(0,0,450,800);
+ ctx.fillStyle="#fff";
+ ctx.font="28px sans-serif";
+ ctx.fillText("はかせのダーツパニック",30,60);
+ ctx.fillStyle="#ff4081";
+ ctx.fillText("Ver0.0.2",160,100);
+ darts.update();
+ darts.draw();
+ player.draw();
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
